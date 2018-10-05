@@ -1,0 +1,107 @@
+1. Ubah method ?view pilot agar menampilkan daftar flight yang terdaftar untuk setiap pilot?. 
+HTML :
+<div th:each="flights : ${listFlight}">
+			<h3>###############################</h3>
+			<h3 th:text="'Flight Number : ' + ${flights.flightNumber}"></h3>
+			<h3 th:text="'Origin : ' + ${flights.origin}"></h3>
+			<h3 th:text="'Destination : ' + ${flights.destination}"></h3>
+			<h3 th:text="'Time : ' + ${flights.time}"></h3>
+			<a th:href="@{'/flight/delete/' + ${flights.flightNumber}}" class="btn btn-danger">Delete Flight</a>
+			<a th:href="@{'/flight/update/' + ${flights.flightNumber}}" class="btn btn-danger">Update Flight</a>
+		</div>
+
+Pilot Controller :
+@RequestMapping("/pilot/view")
+	public String view(@RequestParam("licenseNumber") String licenseNumber, Model model) {
+		PilotModel archive = pilotService.getPilotDetailByLicenseNumber(licenseNumber);
+		model.addAttribute("pilot", archive);
+		List<FlightModel> pilotFligths = archive.getPilotFlight();
+		model.addAttribute("listFlight",pilotFligths);
+		return "view-pilot";
+	}
+
+2. Buatlah fitur ?delete? untuk menghapus seorang pilot dan sebuah penerbangan. 
+Pilot Controller :
+@RequestMapping(value = "/pilot/delete/{licenseNumber}", method = RequestMethod.GET)
+	public String deletePilot(@PathVariable("licenseNumber") String licenseNumber) {
+		PilotModel archive = pilotService.getPilotDetailByLicenseNumber(licenseNumber);
+		pilotService.deletePilot(archive);
+	    return "delete";
+	}
+
+Flight Controller :
+@RequestMapping(value = "/flight/delete/{flightNumber}", method = RequestMethod.GET)
+	public String deletePilot(@PathVariable("flightNumber") String flightNumber) {
+		FlightModel archive = flightService.findByFlightNumber(flightNumber);
+		flightService.deleteFlight(archive);
+	    return "delete";
+	}
+
+Pilot Service :
+public void deletePilot(PilotModel pilot) {
+		pilotDb.delete(pilot);
+		
+	}
+
+	
+Flight Service :
+public void deleteFlight(FlightModel flight) {
+		flightDb.delete(flight);
+	}
+HTML :
+<a th:href="@{'/flight/delete/' + ${flights.flightNumber}}" class="btn btn-danger">Delete Flight</a>
+<a th:href="@{'/pilot/delete/' + ${pilot.licenseNumber}}" class="btn btn-danger">Delete Pilot</a>
+
+3. Buatlah fitur ?update? untuk seorang pilot dan sebuah penerbangan. (Notes: License Number seorang pilot tidak bisa diubah) 
+FLIGHT
+
+@RequestMapping(value = "/flight/update/{flightNumber}", method = RequestMethod.GET)
+	public String updateFlight(@PathVariable("flightNumber") String flightNumber, Model model) {
+		FlightModel archive = flightService.findByFlightNumber(flightNumber);
+		model.addAttribute("flight", archive);
+		return "updateFlight";
+	}
+	
+	@RequestMapping(value = "/flight/update/{id}", method = RequestMethod.POST)
+	public String updateFlightSubmit(@PathVariable("id") long id, @ModelAttribute FlightModel flight) {
+		FlightModel archive = flightService.findByFlightId(id);
+		archive.setFlightNumber(flight.getFlightNumber());
+		archive.setDestination(flight.getDestination());
+		archive.setOrigin(flight.getOrigin());
+		archive.setTime(flight.getTime());
+		flightService.addFlight(archive);
+		return "update";
+	}
+
+PILOT
+@RequestMapping(value = "/pilot/update/{licenseNumber}", method = RequestMethod.GET)
+	public String updatePilot(@PathVariable("licenseNumber") String licenseNumber, Model model) {
+		PilotModel archive = pilotService.getPilotDetailByLicenseNumber(licenseNumber);
+		model.addAttribute("pilot", archive);
+		return "updatePilot";
+	}
+	
+	@RequestMapping(value = "/pilot/update/{licenseNumber}", method = RequestMethod.POST)
+	public String updatePilotSubmit(@PathVariable("licenseNumber") String licenseNumber, @ModelAttribute PilotModel pilot) {
+		
+		PilotModel archive = pilotService.getPilotDetailByLicenseNumber(licenseNumber);
+		archive.setFlyhour(pilot.getFlyhour());
+		archive.setName(pilot.getName());
+		pilotService.addPilot(archive);
+		return "update";
+	}
+
+4. Buatlah fitur ?untuk melihat? penerbangan sehingga dapat menampilkan nama dan licensenumber dari pilot yang bertugas
+
+Flight Controller :
+@RequestMapping("/flight/view")
+	public String view(Model model) {
+		List<FlightModel> flightList = flightService.getFlightList();
+		model.addAttribute("flightList", flightList);
+		return "view-flight";
+	}
+
+Flight Service :
+public List<FlightModel> getFlightList(){
+		return flightDb.findAll();
+	}
