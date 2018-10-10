@@ -41,10 +41,12 @@ public class FlightController {
 			return "add";
 	}
 	
-	@RequestMapping(value = "/flight/delete/{flightNumber}", method = RequestMethod.GET)
-	public String deletePilot(@PathVariable("flightNumber") String flightNumber) {
-		FlightModel archive = flightService.findByFlightNumber(flightNumber);
-		flightService.deleteFlight(archive);
+	@RequestMapping(value = "/flight/delete", method = RequestMethod.POST)
+	public String deletePilot(@ModelAttribute PilotModel pilot, Model model) {
+		for(FlightModel flight : pilot.getPilotFlight()) {
+			flightService.deleteFlight(flight);
+		}
+		
 	    return "delete";
 	}
 	/** View Pilot dengan licenseNumber **/

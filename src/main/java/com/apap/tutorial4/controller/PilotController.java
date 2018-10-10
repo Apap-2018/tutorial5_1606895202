@@ -43,7 +43,7 @@ public class PilotController {
 	
 	/** View Pilot dengan licenseNumber **/
 	
-	@RequestMapping("/pilot/view")
+	@RequestMapping(value = "/pilot/view", method = RequestMethod.GET)
 	public String view(@RequestParam("licenseNumber") String licenseNumber, Model model) {
 		PilotModel archive = pilotService.getPilotDetailByLicenseNumber(licenseNumber);
 		model.addAttribute("pilot", archive);
