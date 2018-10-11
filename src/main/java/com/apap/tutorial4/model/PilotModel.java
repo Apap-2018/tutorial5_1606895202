@@ -37,7 +37,7 @@ public class PilotModel implements Serializable{
 	private int flyhour;
 	
 	@OneToMany(mappedBy = "pilot", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private List<FlightModel> pilotFlight;
+	public List<FlightModel> pilotFlight;
 
 	public long getId() {
 		return id;

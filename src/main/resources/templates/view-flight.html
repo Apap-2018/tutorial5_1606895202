@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-	<head>
-		<title>View Flight</title>
-	</head>
+<head>
+	<title>View Flight</title>
+	<object th:include="fragments/fragment :: css" th:remove="tag"></object>
+	<object th:include="fragments/fragment :: js" th:remove="tag"></object>
+</head>
+
+<body>
+	<nav th:replace="fragments/fragment :: navbar-viewFlight"></nav>
 		<h3>DAFTAR FLIGHTS</h3>
 		<div th:each="flights : ${flightList}">
 			<h3>###############################</h3>

@@ -1,0 +1,98 @@
+LATIHAN
+1. Menambahkan
+<nav th:fragment="navbar-viewPilot" class="navbar navbar-expand-lg navbar-dark bg-dark">
+			<a class="navbar-brand" href="#">VIEW PILOT</a>
+			<div class="collapse navbar-collapse" id="navbarSupportedContent">
+				<ul class="navbar-nav mr-auto">
+					<li class="nav-item active">
+						<a class="nav-link" href="/">Home</a>
+					</li>
+				</ul>
+			</div>
+		</nav>
+		<nav th:fragment="navbar-addFlight" class="navbar navbar-expand-lg navbar-dark bg-dark">
+			<a class="navbar-brand" href="#">ADD FLIGHT</a>
+			<div class="collapse navbar-collapse" id="navbarSupportedContent">
+				<ul class="navbar-nav mr-auto">
+					<li class="nav-item active">
+						<a class="nav-link" href="/">Home</a>
+					</li>
+				</ul>
+			</div>
+		</nav>
+
+fragment dengan nama yang berbeda2
+Menambahkan kode di bawah pada setiap html dengan nama page yang berbeda
+<nav th:replace="fragments/fragment :: navbar-addFlight"></nav>
+
+2. 
+
+Membuat Form di html
+
+<form th:action="@{/flight/add/{licenseNumber}(licenseNumber=${pilot.licenseNumber})}" th:object="${pilot}" method="POST">
+		<input type="hidden" th:field="*{licenseNumber}"/>
+			<table>
+				<thead>
+					<tr>
+						<th style="text-align: center">Flight Number</th>
+						<th style="text-align: center" >Origin</th>
+						<th style="text-align: center" >Destination</th>
+						<th style="text-align: center" >Time</th>
+						<th>
+							<button type="submit" name="addRow">Add Flight</button>
+						</th>					
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="flights,iterationStatus : *{pilotFlight}">
+						<td><input type="text" th:field="*{pilotFlight[__${iterationStatus.index}__].flightNumber}" /></td>
+						<td><input type="text" th:field="*{pilotFlight[__${iterationStatus.index}__].origin}" /></td>
+						<td><input type="text" th:field="*{pilotFlight[__${iterationStatus.index}__].destination}" /></td>
+						<td><input type="date" th:field="*{pilotFlight[__${iterationStatus.index}__].time}" /></td>
+					</tr>
+				</tbody>
+			</table>
+			<button type="submit" name="save">Submit</button>
+	</form>
+
+Flight Controller
+
+Arraylist untuk menampung flight lebih dari satu
+
+@RequestMapping(value = "/flight/add/{licenseNumber}", method = RequestMethod.GET)
+	private String add(@PathVariable(value = "licenseNumber") String licenseNumber, Model model) {
+		FlightModel flight = new FlightModel();
+		PilotModel pilot = pilotService.getPilotDetailByLicenseNumber(licenseNumber);
+		ArrayList<FlightModel> flightList = new ArrayList<>();
+		pilot.setPilotFlight(flightList);
+		flightList.add(new FlightModel());
+		model.addAttribute("pilot", pilot);
+		model.addAttribute("flight", flight);
+		return "addFlight";
+	}
+
+Untuk menambah row
+	
+	@RequestMapping(value="/flight/add/{licenseNumber}", params={"addRow"}, method = RequestMethod.POST)
+	public String addRow(PilotModel pilot, BindingResult bindingResult, Model model) {
+		if (pilot.getPilotFlight() ==  null) {
+			pilot.setPilotFlight(new ArrayList<FlightModel>());
+		}
+		pilot.getPilotFlight().add(new FlightModel());
+	    model.addAttribute("pilot", pilot);
+	    return "addFlight";
+
+	}
+
+Untuk memasukkan banyak flight dalam satu pilot model
+	
+	@RequestMapping(value = "/flight/add/{licenseNumber}", method = RequestMethod.POST, params="save")
+		private String addFlightSubmit(@ModelAttribute PilotModel pilot) {
+		PilotModel archive = pilotService.getPilotDetailByLicenseNumber(pilot.getLicenseNumber());
+		for(FlightModel flight : pilot.getPilotFlight()) {
+			flight.setPilot(archive);
+			flightService.addFlight(flight);
+		}
+		return "add";
+	}
+
